@@ -1,4 +1,4 @@
-package GoRaspberryPiScripts
+package main
 
 import (
 	"log"
