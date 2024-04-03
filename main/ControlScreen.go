@@ -1,35 +1,35 @@
 package main
 
 import (
+	lcd "github.com/wjessop/lcm1602_lcd"
+	"golang.org/x/exp/io/i2c"
 	"log"
-	"time"
-
-	"periph.io/x/periph/conn/i2c/i2creg"
-	"periph.io/x/periph/devices/adafruit/charlcd"
 )
 
 func main() {
-	// Initialize the I2C bus.
-	bus, err := i2creg.Open("")
+	// Configure this line with the device location and address of your device
+	lcdDevice, err := i2c.Open(&i2c.Devfs{Dev: "/dev/i2c-1"}, 0x27)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer bus.Close()
+	defer lcdDevice.Close()
 
-	// Initialize the LCD.
-	lcd, err := charlcd.NewI2C(bus, 0x27, 16, 2)
+	lcdDisplay, err := lcd.NewLCM1602LCD(lcdDevice)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer lcd.Halt()
 
-	// Display some text.
-	lcd.ClearDisplay()
-	lcd.SetCursor(0, 0)
-	lcd.Print("Hello,")
-	lcd.SetCursor(0, 1)
-	lcd.Print("Raspberry Pi!")
+	// Write a string to row 1, position 0 (ie, the start of the line)
+	if err := lcdDisplay.WriteString("Hello World!", 1, 0); err != nil {
+		log.Fatal(err)
+	}
 
-	// Wait for a while.
-	time.Sleep(5 * time.Second)
+	// Write a string to row 2, position 7
+	if err := lcdDisplay.WriteString("(>'.'<)", 2, 7); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := lcdDisplay.Clear(); err != nil {
+		log.Fatal(err)
+	}
 }
